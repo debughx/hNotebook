@@ -1,0 +1,1 @@
+"""hNotebook RAG service (FastAPI)."""

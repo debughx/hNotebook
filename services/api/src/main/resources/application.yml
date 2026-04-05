@@ -1,0 +1,29 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: hnotebook-api
+  datasource:
+    url: jdbc:h2:file:./data/hnotebook;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  h2:
+    console:
+      enabled: false
+
+hnotebook:
+  jwt:
+    # HS256: at least 256 bits (32 bytes). Set HNOTEBOOK_JWT_SECRET in production.
+    secret: ${HNOTEBOOK_JWT_SECRET:hnotebook-dev-jwt-secret-key-32b!}
+    expiration-ms: ${HNOTEBOOK_JWT_EXPIRATION_MS:86400000}

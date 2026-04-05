@@ -1,0 +1,44 @@
+services:
+  api:
+    build:
+      context: ../services/api
+      dockerfile: Dockerfile
+    container_name: hnotebook-api
+    environment:
+      HNOTEBOOK_JWT_SECRET: "0123456789abcdef0123456789abcdef"
+    volumes:
+      - api_data:/app/data
+    expose:
+      - "8080"
+
+  rag:
+    build:
+      context: ../services/rag
+      dockerfile: Dockerfile
+    container_name: hnotebook-rag
+    environment:
+      HNOTEBOOK_JWT_SECRET: "0123456789abcdef0123456789abcdef"
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
+      CHAT_MODEL: ${CHAT_MODEL:-gpt-4o-mini}
+      RAG_STORE_PATH: ${RAG_STORE_PATH:-/app/data/rag_store.db}
+    volumes:
+      - rag_data:/app/data
+    expose:
+      - "8000"
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.gateway
+    container_name: hnotebook-gateway
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+      - rag
+
+volumes:
+  api_data:
+  rag_data:

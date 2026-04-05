@@ -1,0 +1,26 @@
+# Node
+node_modules/
+dist/
+*.local
+
+# Java
+services/api/target/
+services/api/data/
+*.class
+
+# Python
+services/rag/.venv/
+services/rag/__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+!.env.example
