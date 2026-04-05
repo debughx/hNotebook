@@ -11,6 +11,9 @@ services/api/data/
 # Python
 services/rag/.venv/
 services/rag/__pycache__/
+services/rag/data/*.db
+services/rag/data/*.db-shm
+services/rag/data/*.db-wal
 *.py[cod]
 .pytest_cache/
 
