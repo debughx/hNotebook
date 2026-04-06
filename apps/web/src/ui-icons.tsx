@@ -411,6 +411,227 @@ export function IconCheck({ size = 20, className, ...p }: IconProps) {
   )
 }
 
+/** Markdown: heading levels (toolbar) */
+export function IconMdHeading({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <path d="M6 5v14M6 12h5.5M11.5 5v14" />
+      <path d="M17 5v3.5M17 10.5V19M17 10.5h3.5a2 2 0 0 0 0-4H17" />
+    </svg>
+  )
+}
+
+export function IconMdBold({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      strokeWidth={2.35}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <path d="M8 5v14M8 12h5a3.5 3.5 0 1 0 0-7H8" />
+      <path d="M8 12h5.5a3.5 3.5 0 1 1 0 7H8" />
+    </svg>
+  )
+}
+
+export function IconMdItalic({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <path d="M10 5h6M8 19h6M14 5L10 19" />
+    </svg>
+  )
+}
+
+export function IconMdListBullets({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <circle cx="5.5" cy="8" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="5.5" cy="12" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="5.5" cy="16" r="1.15" fill="currentColor" stroke="none" />
+      <path d="M9 8h11M9 12h11M9 16h8" />
+    </svg>
+  )
+}
+
+export function IconMdListOrdered({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <path d="M5 7.5h2M6 6v4M5.5 14h2l-1.2 4M10 8h9M10 12h9M10 16h7" />
+    </svg>
+  )
+}
+
+export function IconMdTask({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <rect x="4.5" y="6" width="4.5" height="4.5" rx="1" />
+      <path d="M11 8.25h9M11 12.25h9M11 16.25h7" />
+    </svg>
+  )
+}
+
+export function IconMdQuote({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <path d="M7 8c-1.5 2-2 3.5-2 5h4M15 8c-1.5 2-2 3.5-2 5h4" />
+    </svg>
+  )
+}
+
+export function IconMdCode({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <path d="M8 9l-3 3 3 3M16 9l3 3-3 3M13.5 7l-3 10" />
+    </svg>
+  )
+}
+
+export function IconMdCodeBlock({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <rect x="4" y="5" width="16" height="14" rx="2" />
+      <path d="M8 9l-2 2 2 2M16 9l2 2-2 2" />
+    </svg>
+  )
+}
+
+export function IconMdTable({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <rect x="4" y="5" width="16" height="14" rx="1.5" />
+      <path d="M4 10h16M10 5v14M16 5v14" />
+    </svg>
+  )
+}
+
+export function IconMdLink({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <path d="M10 14a4 4 0 0 1 0-5.5l1-1a4 4 0 0 1 5.66 5.66l-1 1M14 10a4 4 0 0 1 0 5.5l-1 1a4 4 0 0 1-5.66-5.66l1-1" />
+    </svg>
+  )
+}
+
+export function IconMdImage({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+      <circle cx="8.5" cy="10" r="1.5" fill="currentColor" stroke="none" />
+      <path d="M5 18l4.5-5 3 3.5L15 12l4 6" />
+    </svg>
+  )
+}
+
+export function IconMdHr({ size = 18, className, ...p }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...S}
+      className={className}
+      aria-hidden
+      {...p}
+    >
+      <path d="M5 12h14" />
+      <path d="M9 8v8M15 8v8" opacity="0.35" />
+    </svg>
+  )
+}
+
 type IconColumnsProps = IconProps & { active?: boolean }
 
 /** Split editor / preview */

@@ -17,6 +17,27 @@
 
 ---
 
+## Screenshots
+
+Illustrative UI captures for this README (replace files under [`docs/screenshots/`](docs/screenshots/) with your own if you want pixel-accurate shots of your build).
+
+<p align="center">
+  <b>Workspace</b> — folders, search, Markdown editor<br />
+  <img src="docs/screenshots/01-workspace.png" alt="hNotebook workspace with sidebar and editor" width="920" />
+</p>
+
+<p align="center">
+  <b>Knowledge base chat</b> — sessions, messages, question box<br />
+  <img src="docs/screenshots/02-rag-chat.png" alt="Knowledge base chat panel" width="920" />
+</p>
+
+<p align="center">
+  <b>Themes</b> — preset picker (palette)<br />
+  <img src="docs/screenshots/03-themes.png" alt="Theme preset menu" width="720" />
+</p>
+
+---
+
 ## Tech stack
 
 | Layer | Stack |
@@ -37,7 +58,7 @@
 | `services/rag` | Python RAG service |
 | `deploy/` | `docker-compose.yml` + gateway image |
 | `contracts/` | Optional OpenAPI / shared schemas |
-| `docs/` | Architecture & local development |
+| `docs/` | Architecture, local development, [`screenshots/`](docs/screenshots/) for README images |
 | `scripts/` | Helper scripts (e.g. Windows `dev.ps1`) |
 
 ---

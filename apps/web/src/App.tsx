@@ -7,7 +7,11 @@ import {
   useState,
 } from 'react'
 import { createPortal } from 'react-dom'
-import type { ImgHTMLAttributes, MouseEvent as ReactMouseEvent } from 'react'
+import type {
+  ImgHTMLAttributes,
+  KeyboardEvent as ReactKeyboardEvent,
+  MouseEvent as ReactMouseEvent,
+} from 'react'
 import type {
   FolderDto,
   NoteDto,
@@ -17,6 +21,12 @@ import type {
 import * as api from './api/client'
 import * as sync from './sync/engine'
 import { ingestContentHashHex } from './util/hash'
+import {
+  applyHeadingEdit,
+  applyMarkdownEdit,
+  type MarkdownToolbarAction,
+} from './util/markdownInsert'
+import { applyTextareaTab } from './util/textareaTab'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
@@ -28,6 +38,19 @@ import {
   IconFolder,
   IconInfo,
   IconLogOut,
+  IconMdBold,
+  IconMdCode,
+  IconMdCodeBlock,
+  IconMdHeading,
+  IconMdHr,
+  IconMdImage,
+  IconMdItalic,
+  IconMdLink,
+  IconMdListBullets,
+  IconMdListOrdered,
+  IconMdQuote,
+  IconMdTable,
+  IconMdTask,
   IconNoteGlyph,
   IconPalette,
   IconPencil,
@@ -295,6 +318,40 @@ function orderedFolders(folders: FolderDto[]): FolderDto[] {
 const DND_FOLDER = 'folder:'
 const DND_NOTE = 'note:'
 
+const MD_HEADING_LEVELS: {
+  level: 1 | 2 | 3 | 4 | 5 | 6
+  label: string
+  title: string
+}[] = [
+  { level: 1, label: 'H1', title: '一级标题 #' },
+  { level: 2, label: 'H2', title: '二级标题 ##' },
+  { level: 3, label: 'H3', title: '三级标题 ###' },
+  { level: 4, label: 'H4', title: '四级标题 ####' },
+  { level: 5, label: 'H5', title: '五级标题 #####' },
+  { level: 6, label: 'H6', title: '六级标题 ######' },
+]
+
+const MD_TOOLBAR_ICONS: {
+  action: MarkdownToolbarAction
+  title: string
+  Icon: typeof IconMdBold
+}[] = [
+  { action: 'bold', title: '加粗 **', Icon: IconMdBold },
+  { action: 'italic', title: '斜体 _', Icon: IconMdItalic },
+  { action: 'bulletList', title: '无序列表 -', Icon: IconMdListBullets },
+  { action: 'orderedList', title: '有序列表 1.', Icon: IconMdListOrdered },
+  { action: 'taskList', title: '任务列表 - [ ]', Icon: IconMdTask },
+  { action: 'quote', title: '引用 >', Icon: IconMdQuote },
+  { action: 'codeInline', title: '行内代码 `', Icon: IconMdCode },
+  { action: 'codeBlock', title: '代码块 ```', Icon: IconMdCodeBlock },
+  { action: 'table', title: '插入表格', Icon: IconMdTable },
+  { action: 'link', title: '链接 [text](url)', Icon: IconMdLink },
+  { action: 'image', title: '图片 ![alt](url)', Icon: IconMdImage },
+  { action: 'hr', title: '分割线 ---', Icon: IconMdHr },
+]
+
+const MD_ICON_SZ = 17
+
 function App() {
   const [token, setTokenState] = useState<string | null>(() => api.getToken())
   const [email, setEmail] = useState('')
@@ -321,6 +378,8 @@ function App() {
   )
   const [mdPreviewOpen, setMdPreviewOpen] = useState(readMdPreviewOpen)
   const [previewPaneWidth, setPreviewPaneWidth] = useState(readMdPreviewWidth)
+  const [mdHeadingOpen, setMdHeadingOpen] = useState(false)
+  const mdHeadingWrapRef = useRef<HTMLDivElement | null>(null)
   const [collapsedFolderIds, setCollapsedFolderIds] = useState<Set<string>>(
     () => new Set(),
   )
@@ -338,7 +397,6 @@ function App() {
   >(null)
   const folderNameInputRef = useRef<HTMLInputElement>(null)
   const sessionTitleComposingRef = useRef(false)
-  const noteTitleComposingRef = useRef(false)
   const [draggingFolderId, setDraggingFolderId] = useState<string | null>(null)
   const [dropTargetFolderId, setDropTargetFolderId] = useState<string | null>(null)
   const [draggingNoteId, setDraggingNoteId] = useState<string | null>(null)
@@ -381,6 +439,7 @@ function App() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const notesRef = useRef(notes)
   const chatThreadRef = useRef<HTMLDivElement | null>(null)
+  const bodyTextareaRef = useRef<HTMLTextAreaElement | null>(null)
   const chatFabDraggingRef = useRef(false)
   const chatFabMovedRef = useRef(false)
   const chatFabOffsetRef = useRef({ dx: 0, dy: 0 })
@@ -1181,10 +1240,6 @@ function App() {
   }, [renamingSessionId])
 
   useEffect(() => {
-    if (!noteRename) noteTitleComposingRef.current = false
-  }, [noteRename])
-
-  useEffect(() => {
     const close = () => setTreeMenu(null)
     window.addEventListener('click', close)
     return () => window.removeEventListener('click', close)
@@ -1337,6 +1392,79 @@ function App() {
     })
   }, [])
 
+  const onMarkdownToolbarAction = useCallback(
+    (action: MarkdownToolbarAction) => {
+      const ta = bodyTextareaRef.current
+      if (!ta || !selectedId) return
+      const r = applyMarkdownEdit(
+        body,
+        ta.selectionStart,
+        ta.selectionEnd,
+        action,
+      )
+      autosaveOk.current = true
+      setBody(r.text)
+      window.setTimeout(() => {
+        const el = bodyTextareaRef.current
+        if (!el) return
+        el.focus()
+        el.setSelectionRange(r.selectionStart, r.selectionEnd)
+      }, 0)
+    },
+    [body, selectedId],
+  )
+
+  const onBodyKeyDown = useCallback(
+    (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key !== 'Tab') return
+      if (e.nativeEvent.isComposing) return
+      e.preventDefault()
+      const ta = e.currentTarget
+      const r = applyTextareaTab(
+        body,
+        ta.selectionStart,
+        ta.selectionEnd,
+        e.shiftKey,
+      )
+      autosaveOk.current = true
+      setBody(r.text)
+      window.setTimeout(() => {
+        const el = bodyTextareaRef.current
+        if (!el) return
+        el.setSelectionRange(r.selectionStart, r.selectionEnd)
+      }, 0)
+    },
+    [body],
+  )
+
+  const applyHeadingLevel = useCallback(
+    (level: 1 | 2 | 3 | 4 | 5 | 6) => {
+      const ta = bodyTextareaRef.current
+      if (!ta || !selectedId) return
+      const r = applyHeadingEdit(body, ta.selectionStart, ta.selectionEnd, level)
+      autosaveOk.current = true
+      setBody(r.text)
+      setMdHeadingOpen(false)
+      window.setTimeout(() => {
+        const el = bodyTextareaRef.current
+        if (!el) return
+        el.focus()
+        el.setSelectionRange(r.selectionStart, r.selectionEnd)
+      }, 0)
+    },
+    [body, selectedId],
+  )
+
+  useEffect(() => {
+    if (!mdHeadingOpen) return
+    const onDoc = (e: MouseEvent) => {
+      if (mdHeadingWrapRef.current?.contains(e.target as Node)) return
+      setMdHeadingOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [mdHeadingOpen])
+
   const onPreviewSplitterDown = useCallback(
     (e: ReactMouseEvent<HTMLButtonElement>) => {
       e.preventDefault()
@@ -1469,24 +1597,14 @@ function App() {
           {noteRename?.id === n.id ? (
             <input
               className="tree-note-rename-input"
+              type="text"
               value={noteRename.text}
-              onCompositionStart={() => {
-                noteTitleComposingRef.current = true
-              }}
-              onCompositionEnd={(e) => {
-                noteTitleComposingRef.current = false
-                setNoteRename({ id: n.id, text: e.currentTarget.value })
-              }}
-              onChange={(e) => {
-                if (noteTitleComposingRef.current) return
+              onChange={(e) =>
                 setNoteRename({ id: n.id, text: e.target.value })
-              }}
+              }
               onBlur={() => void commitNoteRename()}
               onKeyDown={(e) => {
-                if (
-                  e.key === 'Enter' &&
-                  !(e.nativeEvent as KeyboardEvent).isComposing
-                ) {
+                if (e.key === 'Enter') {
                   e.preventDefault()
                   void commitNoteRename()
                 }
@@ -2012,7 +2130,63 @@ function App() {
           <div className="editor-body editor-body--content-only">
             {selectedId ? (
               <>
-                <div className="editor-meta-row">
+                <div className="editor-bar">
+                  <div className="md-toolbar" role="toolbar" aria-label="Markdown 快捷插入">
+                    <div
+                      className={`md-toolbar-head-wrap${mdHeadingOpen ? ' md-toolbar-head-wrap--open' : ''}`}
+                      ref={mdHeadingWrapRef}
+                    >
+                      <button
+                        type="button"
+                        className="md-toolbar-btn md-toolbar-btn--split"
+                        title="标题级别 # … ######"
+                        aria-expanded={mdHeadingOpen}
+                        aria-haspopup="menu"
+                        aria-label="插入标题"
+                        onMouseDown={(e) => {
+                          e.preventDefault()
+                          setMdHeadingOpen((v) => !v)
+                        }}
+                      >
+                        <IconMdHeading size={MD_ICON_SZ} />
+                        <IconChevronDown size={13} className="md-toolbar-chevron" />
+                      </button>
+                      {mdHeadingOpen && (
+                        <div className="md-toolbar-dropdown" role="menu">
+                          {MD_HEADING_LEVELS.map((h) => (
+                            <button
+                              key={h.level}
+                              type="button"
+                              role="menuitem"
+                              title={h.title}
+                              onMouseDown={(e) => {
+                                e.preventDefault()
+                                applyHeadingLevel(h.level)
+                              }}
+                            >
+                              <span className="md-toolbar-dd-k">{h.label}</span>
+                              <span className="md-toolbar-dd-hint">{h.title}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {MD_TOOLBAR_ICONS.map(({ action, title, Icon }) => (
+                      <button
+                        key={action}
+                        type="button"
+                        className="md-toolbar-btn"
+                        title={title}
+                        aria-label={title}
+                        onMouseDown={(e) => {
+                          e.preventDefault()
+                          onMarkdownToolbarAction(action)
+                        }}
+                      >
+                        <Icon size={MD_ICON_SZ} />
+                      </button>
+                    ))}
+                  </div>
                   <div className="editor-meta-actions">
                     {selectedNote && (
                       <span
@@ -2041,6 +2215,7 @@ function App() {
                 {narrowLayout && mdPreviewOpen ? (
                   <>
                     <textarea
+                      ref={bodyTextareaRef}
                       className="body-input body-input--solo"
                       value={body}
                       onChange={(e) => {
@@ -2049,6 +2224,7 @@ function App() {
                       }}
                       placeholder="Markdown 正文（标题、文件夹与保存请在左侧目录树中操作）"
                       spellCheck={false}
+                      onKeyDown={onBodyKeyDown}
                     />
                     <div
                       className="md-preview-drawer-backdrop"
@@ -2096,6 +2272,7 @@ function App() {
                     }}
                   >
                     <textarea
+                      ref={bodyTextareaRef}
                       className="body-input body-input--split"
                       value={body}
                       onChange={(e) => {
@@ -2104,6 +2281,7 @@ function App() {
                       }}
                       placeholder="Markdown 正文（标题、文件夹与保存请在左侧目录树中操作）"
                       spellCheck={false}
+                      onKeyDown={onBodyKeyDown}
                     />
                     <button
                       type="button"
@@ -2115,6 +2293,7 @@ function App() {
                   </div>
                 ) : (
                   <textarea
+                    ref={bodyTextareaRef}
                     className="body-input body-input--solo"
                     value={body}
                     onChange={(e) => {
@@ -2123,6 +2302,7 @@ function App() {
                     }}
                     placeholder="Markdown 正文（标题、文件夹与保存请在左侧目录树中操作）"
                     spellCheck={false}
+                    onKeyDown={onBodyKeyDown}
                   />
                 )}
                 {saveHint && <p className="hint editor-save-hint">{saveHint}</p>}

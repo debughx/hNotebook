@@ -17,6 +17,27 @@
 
 ---
 
+## 产品截图
+
+以下为 README 使用的**界面示意**；若要展示你本机构建的真实像素截图，可直接替换 [`docs/screenshots/`](docs/screenshots/) 目录下对应 PNG。
+
+<p align="center">
+  <b>工作台</b> — 文件夹树、搜索、Markdown 编辑<br />
+  <img src="docs/screenshots/01-workspace.png" alt="hNotebook 工作台：侧栏与编辑器" width="920" />
+</p>
+
+<p align="center">
+  <b>知识库聊天</b> — 历史会话、对话区、提问输入<br />
+  <img src="docs/screenshots/02-rag-chat.png" alt="知识库聊天面板" width="920" />
+</p>
+
+<p align="center">
+  <b>主题</b> — 调色板预设菜单<br />
+  <img src="docs/screenshots/03-themes.png" alt="主题预设选择" width="720" />
+</p>
+
+---
+
 ## 技术栈
 
 | 层级 | 技术 |
@@ -37,7 +58,7 @@
 | `services/rag` | Python RAG 服务 |
 | `deploy/` | `docker-compose.yml` 与网关镜像 |
 | `contracts/` | 可选：OpenAPI / 共享 Schema |
-| `docs/` | 架构与本地开发说明 |
+| `docs/` | 架构与本地开发说明；[`screenshots/`](docs/screenshots/) 存放 README 配图 |
 | `scripts/` | 辅助脚本（如 Windows 下 `dev.ps1`） |
 
 ---
